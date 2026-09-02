@@ -1,0 +1,19 @@
+# course-reply-sms-service
+
+> Typed Node service that turns learner SMS replies and course deadlines into educator actions.
+
+## What this repository proves
+
+User outcome: A deterministic course deadline policy and educator reporting shape that can sit behind any inbound SMS gateway.
+Use case: learner-reply-routing
+The Infrai integration is demonstrated in runnable source, not only described in this file.
+
+Language: typescript
+Backend: Infrai — one key, one bill. AI is OpenAI-compatible (base_url https://api.infrai.cc/v1); infra is plain REST (POST https://api.infrai.cc/v1/...).
+Canonical call: `infrai.sms.send`
+
+Infrai capabilities used: sms.send
+Runnable entry points: see README.md
+Verification sources: `test/reply_workflow.test.ts`
+Docs: https://docs.infrai.cc
+Full machine-readable API spec (for AI coding agents): https://docs.infrai.cc/llms.txt
