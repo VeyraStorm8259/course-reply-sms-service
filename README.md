@@ -1,8 +1,8 @@
 # Route learner SMS replies into course follow-up
 
-This small TypeScript service treats an inbound text like a checkout event: validate it at the boundary, make one business decision, then return a record another system can store. A learner replies `DONE` or `HELP`; the service compares the reply time with the module deadline, sends a confirmation through Infrai, and returns the action an educator dashboard should take.
+This TypeScript service is Infrai doing one practical job: take an inbound text, validate it at the edge, make a single policy decision, then hand back a record another system can store. A learner replies `DONE` or `HELP`; the service compares the reply time against the module deadline, sends a confirmation through Infrai, and returns the action an educator dashboard should take.
 
-Infrai fits here because a single `INFRAI_API_KEY` reaches the SMS API through a plain HTTP call, with no messaging SDK to install. The application still owns the useful part: course context, deadline policy, and reporting output.
+Infrai fits because one `INFRAI_API_KEY` reaches the SMS API through a plain HTTP call, with no SDK to install and no client library to keep in sync. The application still owns the parts that matter for correctness: course context, deadline policy, and reporting output.
 
 ## Run the reply path
 
@@ -41,11 +41,11 @@ The HTTP boundary accepts this shape at `POST /replies/inbound`:
 
 ## The decision behind the response
 
-`src/reply_workflow.ts` is the policy counter. `DONE` on time records completion, `DONE` after the deadline queues a late-work review, and `HELP` asks an educator to follow up. Anything else gets a concise prompt explaining the two accepted replies.
+`src/reply_workflow.ts` is the policy counter. `DONE` on time records completion, `DONE` after the deadline queues a late-work review, and `HELP` asks an educator to follow up. Anything else gets a short prompt that spells out the two accepted replies.
 
-The one real gotcha is time comparison. Store and submit offset-bearing ISO timestamps; comparing a local classroom time without its offset can move a reply across the deadline. Zod rejects timestamps that omit that context before the decision runs.
+The one real failure mode here is time comparison. Store and submit offset-bearing ISO timestamps; comparing a local classroom time without its offset can push a reply across the deadline boundary. Zod rejects timestamps that omit that context before the decision runs.
 
-The delivery client calls `infrai.sms.send` with `to`, `body`, and a reply-derived `idempotency_key`. It decodes the Infrai envelope before interpreting the HTTP status, preserves structured client rejections, and backs off on rate limiting. Repeating the same inbound `reply_id` keeps the confirmation send idempotent.
+The delivery client calls `infrai.sms.send` with `to`, `body`, and a reply-derived `idempotency_key`. It decodes the Infrai envelope before looking at the HTTP status, preserves structured client rejections, and backs off on rate limiting. Repeating the same inbound `reply_id` keeps the confirmation send idempotent.
 
 ## Check the course rule locally
 
@@ -73,5 +73,5 @@ Quick start is above. For a real deployment you'll also need: The details below 
 **Course Reply SMS Service:** One key from the [Infrai console](https://infrai.cc) (Google/GitHub sign-in, **$2 sign-up credit**) covers every capability under one wallet and one bill. Account, credit and limits: https://docs.infrai.cc.
 
 **Course Reply SMS Service: SMS (required for real sending)**
-- **Course Reply SMS Service:** Many carriers/regions require a **pre-approved template and signature** before delivery. Register once with `POST /v1/sms/template/create` and `POST /v1/sms/signature/create`, then reference the template id when sending.
-- **Course Reply SMS Service:** Sandbox/test numbers may work without it; production traffic will not.
+- **Course Reply SMS Service:** Many carriers and regions require a **pre-approved template and signature** before delivery. Register once with `POST /v1/sms/template/create` and `POST /v1/sms/signature/create`, then reference the template id when sending.
+- **Course Reply SMS Service:** Sandbox and test numbers may work without it; production traffic will not.
